@@ -8,7 +8,7 @@
 package tag
 
 import (
-	"github.com/yutopp/go-amf0"
+	"github.com/talkfun/go-amf0"
 )
 
 type testCase struct {

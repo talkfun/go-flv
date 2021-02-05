@@ -9,10 +9,11 @@ package tag
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/assert"
-	"github.com/yutopp/go-amf0"
 	"io/ioutil"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/talkfun/go-amf0"
 )
 
 func TestEncodeFlvTagCommon(t *testing.T) {

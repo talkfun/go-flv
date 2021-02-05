@@ -8,9 +8,10 @@
 package tag
 
 import (
-	"github.com/yutopp/go-amf0"
 	"io"
 	"io/ioutil"
+
+	"github.com/talkfun/go-amf0"
 )
 
 // ========================================

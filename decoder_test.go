@@ -9,10 +9,11 @@ package flv
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/assert"
 	"testing"
 
-	"github.com/yutopp/go-flv/tag"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/talkfun/go-flv/tag"
 )
 
 func TestDecodeSkipBrokenTag(t *testing.T) {

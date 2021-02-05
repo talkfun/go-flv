@@ -10,10 +10,11 @@ package tag
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/yutopp/go-amf0"
 	"io"
 	"io/ioutil"
+
+	"github.com/pkg/errors"
+	"github.com/talkfun/go-amf0"
 )
 
 func DecodeFlvTag(r io.Reader, flvTag *FlvTag) (err error) {

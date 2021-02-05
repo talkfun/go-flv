@@ -11,11 +11,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 
-	"github.com/yutopp/go-flv/tag"
+	"github.com/pkg/errors"
+
+	"github.com/talkfun/go-flv/tag"
 )
 
 type Decoder struct {

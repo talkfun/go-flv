@@ -8,7 +8,7 @@
 package flv
 
 import (
-	"github.com/yutopp/go-flv/tag"
+	"github.com/talkfun/go-flv/tag"
 )
 
 type Flags uint8

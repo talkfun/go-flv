@@ -12,7 +12,7 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/yutopp/go-flv/tag"
+	"github.com/talkfun/go-flv/tag"
 )
 
 type Encoder struct {
