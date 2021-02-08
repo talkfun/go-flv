@@ -38,9 +38,11 @@ func DecodeFlvTag(r io.Reader, flvTag *FlvTag) (err error) {
 	streamID := binary.BigEndian.Uint32(ui32)
 
 	*flvTag = FlvTag{
-		TagType:   tagType,
-		Timestamp: timestamp,
-		StreamID:  streamID,
+		TagType:           tagType,
+		DataSize:          dataSize,
+		Timestamp:         timestamp,
+		TimestampExtended: buf[7],
+		StreamID:          streamID,
 	}
 
 	lr := io.LimitReader(r, int64(dataSize))
@@ -63,6 +65,7 @@ func DecodeFlvTag(r io.Reader, flvTag *FlvTag) (err error) {
 		if err := DecodeVideoData(lr, &v); err != nil {
 			return errors.Wrap(err, "Failed to decode video data")
 		}
+
 		flvTag.Data = &v
 
 	case TagTypeScriptData:
@@ -150,6 +153,7 @@ func DecodeVideoData(r io.Reader, videoData *VideoData) error {
 		videoData.AVCPacketType = avcVideoPacket.AVCPacketType
 		videoData.CompositionTime = avcVideoPacket.CompositionTime
 		videoData.Data = avcVideoPacket.Data
+
 	} else {
 		videoData.Data = r
 	}
@@ -180,7 +184,7 @@ func DecodeAVCVideoPacket(r io.Reader, avcVideoPacket *AVCVideoPacket) error {
 func DecodeScriptData(r io.Reader, data *ScriptData) error {
 	dec := amf0.NewDecoder(r)
 
-	kv := make(map[string]amf0.ECMAArray)
+	kv := make(map[string]interface{})
 	for {
 		var key string
 		if err := dec.Decode(&key); err != nil {
@@ -190,12 +194,12 @@ func DecodeScriptData(r io.Reader, data *ScriptData) error {
 			return errors.Wrap(err, "Failed to decode key")
 		}
 
-		var value amf0.ECMAArray
+		var value interface{}
 		if err := dec.Decode(&value); err != nil {
 			return errors.Wrap(err, "Failed to decode value")
 		}
-
 		kv[key] = value
+
 	}
 
 	data.Objects = kv

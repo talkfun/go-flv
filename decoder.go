@@ -49,17 +49,6 @@ func (dec *Decoder) Header() *Header {
 }
 
 func (dec *Decoder) Decode(flvTag *tag.FlvTag) error {
-	if !dec.decodedOnce {
-		goto tagSize
-	}
-
-body:
-	if err := tag.DecodeFlvTag(dec.r, flvTag); err != nil {
-		dec.skipTagSize()
-		return err
-	}
-
-tagSize:
 	previousTagSize, err := dec.decodeTagSize()
 	if err != nil {
 		return errors.Wrap(err, "Failed to decode tag size")
@@ -71,7 +60,11 @@ tagSize:
 		}
 
 		dec.decodedOnce = true
-		goto body
+	}
+
+	if err := tag.DecodeFlvTag(dec.r, flvTag); err != nil {
+		dec.skipTagSize()
+		return err
 	}
 
 	return nil

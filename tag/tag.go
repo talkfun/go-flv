@@ -10,8 +10,6 @@ package tag
 import (
 	"io"
 	"io/ioutil"
-
-	"github.com/talkfun/go-amf0"
 )
 
 // ========================================
@@ -27,9 +25,11 @@ const (
 
 type FlvTag struct {
 	TagType
-	Timestamp uint32
-	StreamID  uint32      // 24bit
-	Data      interface{} // *AudioData | *VideoData | *ScriptData
+	DataSize          uint32
+	Timestamp         uint32
+	TimestampExtended uint8
+	StreamID          uint32      // 24bit
+	Data              interface{} // *AudioData | *VideoData | *ScriptData
 }
 
 // Close
@@ -65,6 +65,23 @@ const (
 	SoundFormatDeviceSpecificSound                 = 15
 )
 
+var SoundFormatName = map[SoundFormat]string{
+	SoundFormatLinearPCMPlatformEndian: "LinearPCMPlatformEndian",
+	SoundFormatADPCM:                   "ADPCM",
+	SoundFormatMP3:                     "MP3",
+	SoundFormatLinearPCMLittleEndian:   "LinearPCMLittleEndian",
+	SoundFormatNellymoser16kHzMono:     "Nellymoser16kHzMono",
+	SoundFormatNellymoser8kHzMono:      "Nellymoser8kHzMono",
+	SoundFormatNellymoser:              "Nellymoser",
+	SoundFormatG711ALawLogarithmicPCM:  "G711ALawLogarithmicPCM",
+	SoundFormatG711muLawLogarithmicPCM: "G711muLawLogarithmicPCM",
+	SoundFormatReserved:                "Reserved",
+	SoundFormatAAC:                     "AAC",
+	SoundFormatSpeex:                   "Speex",
+	SoundFormatMP3_8kHz:                "MP3_8kHz",
+	SoundFormatDeviceSpecificSound:     "DeviceSpecificSound",
+}
+
 type SoundRate uint8
 
 const (
@@ -74,12 +91,24 @@ const (
 	SoundRate44kHz            = 3
 )
 
+var SoundRateName = map[SoundRate]string{
+	SoundRate5_5kHz: "5_5kHz",
+	SoundRate11kHz:  "11kHz",
+	SoundRate22kHz:  "22kHz",
+	SoundRate44kHz:  "44kHz",
+}
+
 type SoundSize uint8
 
 const (
 	SoundSize8Bit  SoundSize = 0
 	SoundSize16Bit           = 1
 )
+
+var SoundSizeName = map[SoundSize]string{
+	SoundSize8Bit:  "8Bit",
+	SoundSize16Bit: "16Bit",
+}
 
 type SoundType uint8
 
@@ -88,6 +117,11 @@ const (
 	SoundTypeStereo           = 1
 )
 
+var SoundTypeName = map[SoundType]string{
+	SoundTypeMono:   "Mono",
+	SoundTypeStereo: "Stereo",
+}
+
 type AudioData struct {
 	SoundFormat   SoundFormat
 	SoundRate     SoundRate
@@ -95,6 +129,26 @@ type AudioData struct {
 	SoundType     SoundType
 	AACPacketType AACPacketType
 	Data          io.Reader
+}
+
+func (d *AudioData) SoundFormatName() string {
+	return SoundFormatName[d.SoundFormat]
+}
+
+func (d *AudioData) SoundRateName() string {
+	return SoundRateName[d.SoundRate]
+}
+
+func (d *AudioData) SoundSizeName() string {
+	return SoundSizeName[d.SoundSize]
+}
+
+func (d *AudioData) SoundTypeName() string {
+	return SoundTypeName[d.SoundType]
+}
+
+func (d *AudioData) AACPacketTypeName() string {
+	return AACPacketTypeName[d.AACPacketType]
 }
 
 func (d *AudioData) Read(buf []byte) (int, error) {
@@ -111,6 +165,11 @@ const (
 	AACPacketTypeSequenceHeader AACPacketType = 0
 	AACPacketTypeRaw                          = 1
 )
+
+var AACPacketTypeName = map[AACPacketType]string{
+	AACPacketTypeSequenceHeader: "SequenceHeader",
+	AACPacketTypeRaw:            "Raw",
+}
 
 type AACAudioData struct {
 	AACPacketType AACPacketType
@@ -142,12 +201,44 @@ const (
 	CodecIDAVC                            = 7
 )
 
+var (
+	FrameTypeName = map[FrameType]string{
+		FrameTypeKeyFrame:              "KeyFrame",
+		FrameTypeInterFrame:            "InterFrame",
+		FrameTypeDisposableInterFrame:  "DisposableInterFrame",
+		FrameTypeGeneratedKeyFrame:     "GeneratedKeyFrame",
+		FrameTypeVideoInfoCommandFrame: "VideoInfoCommandFrame",
+	}
+
+	CodecIDName = map[CodecID]string{
+		CodecIDJPEG:                   "JPEG",
+		CodecIDSorensonH263:           "SorensonH263",
+		CodecIDScreenVideo:            "ScreenVideo",
+		CodecIDOn2VP6:                 "On2VP6",
+		CodecIDOn2VP6WithAlphaChannel: "On2VP6WithAlphaChannel",
+		CodecIDScreenVideoVersion2:    "ScreenVideoVersion2",
+		CodecIDAVC:                    "AVC",
+	}
+)
+
 type VideoData struct {
 	FrameType       FrameType
 	CodecID         CodecID
 	AVCPacketType   AVCPacketType
 	CompositionTime int32
 	Data            io.Reader
+}
+
+func (d *VideoData) FrameTypeName() string {
+	return FrameTypeName[d.FrameType]
+}
+
+func (d *VideoData) CodecIDName() string {
+	return CodecIDName[d.CodecID]
+}
+
+func (d *VideoData) AVCPacketTypeName() string {
+	return AVCPacketTypeName[d.AVCPacketType]
 }
 
 func (d *VideoData) Read(buf []byte) (int, error) {
@@ -166,10 +257,52 @@ const (
 	AVCPacketTypeEOS                          = 2
 )
 
+var AVCPacketTypeName = map[AVCPacketType]string{
+	AVCPacketTypeSequenceHeader: "SequenceHeader",
+	AVCPacketTypeNALU:           "NALU",
+	AVCPacketTypeEOS:            "EOS",
+}
+
 type AVCVideoPacket struct {
 	AVCPacketType   AVCPacketType
 	CompositionTime int32
 	Data            io.Reader
+}
+
+type AVCNaluType uint8
+
+const (
+	AVCNaluTypeSLICE    AVCNaluType = 1
+	AVCNaluTypeDPA                  = 2
+	AVCNaluTypeDPB                  = 3
+	AVCNaluTypeDPC                  = 4
+	AVCNaluTypeIDR                  = 5
+	AVCNaluTypeSEI                  = 6
+	AVCNaluTypeSPS                  = 7
+	AVCNaluTypePPS                  = 8
+	AVCNaluTypeAUD                  = 9
+	AVCNaluTypeEOSEQ                = 10
+	AVCNaluTypeEOSTREAM             = 11
+	AVCNaluTypeFILL                 = 12
+)
+
+var AVCNaluTypeName = map[AVCNaluType]string{
+	AVCNaluTypeSLICE:    "SLICE",
+	AVCNaluTypeDPA:      "DPA",
+	AVCNaluTypeDPB:      "DPB",
+	AVCNaluTypeDPC:      "DPC",
+	AVCNaluTypeIDR:      "IDR",
+	AVCNaluTypeSEI:      "SEI",
+	AVCNaluTypeSPS:      "SPS",
+	AVCNaluTypePPS:      "PPS",
+	AVCNaluTypeAUD:      "AUD",
+	AVCNaluTypeEOSEQ:    "EOSEQ",
+	AVCNaluTypeEOSTREAM: "EOSTREAM",
+	AVCNaluTypeFILL:     "FILL",
+}
+
+func GetAVCNaluTypeName(naluType AVCNaluType) string {
+	return AVCNaluTypeName[naluType]
 }
 
 // ========================================
@@ -177,5 +310,5 @@ type AVCVideoPacket struct {
 
 type ScriptData struct {
 	// all values are represented as subset of AMF0
-	Objects map[string]amf0.ECMAArray
+	Objects map[string]interface{}
 }
